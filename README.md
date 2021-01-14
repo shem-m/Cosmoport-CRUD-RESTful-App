@@ -10,11 +10,13 @@ Technologies used:
 
 -Spring Data JPA;
 
--MySQL (база данных (БД)
+-MySQL
 
 # Description
 
-The task was to complete an application by adding CRUD functionality. The following features should be implemented:
+The task was to complete an application by adding CRUD functionality. The interface was given. 
+
+The following features should be implemented:
 1. Get a list of all existing ships;
 2. Create a new ship;
 3. Edit the characteristics of an existing vehicle;
