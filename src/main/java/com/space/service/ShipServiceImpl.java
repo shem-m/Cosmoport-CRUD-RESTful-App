@@ -3,7 +3,11 @@ package com.space.service;
 import com.space.model.Ship;
 import com.space.repository.ShipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -39,7 +43,12 @@ public class ShipServiceImpl implements ShipService {
     }
 
     @Override
-    public List<Ship> getAll() {
-        return shipRepository.findAll();
+    public Page<Ship> getAll(Specification<Ship> specification, Pageable pageable) {
+        return shipRepository.findAll(specification, pageable);
+    }
+
+    @Override
+    public Integer getCount(Specification<Ship> specification) {
+        return shipRepository.findAll(specification).size();
     }
 }

@@ -3,7 +3,12 @@ package com.space.controller;
 import com.space.model.Ship;
 import com.space.model.ShipType;
 import com.space.service.ShipService;
+import com.space.service.ShipSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +24,14 @@ import java.util.List;
 @RequestMapping(value = "/rest")
 public class ShipController {
 
+    private final ShipService shipService;
+    private final ShipSpecification shipSpecification;
+
     @Autowired
-    private ShipService shipService;
+    public ShipController(ShipService shipService, ShipSpecification specification) {
+        this.shipService = shipService;
+        this.shipSpecification = specification;
+    }
 
     @RequestMapping(value = "/ships", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
@@ -36,13 +47,23 @@ public class ShipController {
                                                    @RequestParam(required = false) Integer maxCrewSize,
                                                    @RequestParam(required = false) Double minRating,
                                                    @RequestParam(required = false) Double maxRating,
-                                                   @RequestParam(required = false) ShipOrder order,
+                                                   @RequestParam(required = false, defaultValue = "ID") ShipOrder order,
                                                    @RequestParam(required = false, defaultValue = "0") Integer pageNumber,
                                                    @RequestParam(required = false, defaultValue = "3") Integer pageSize
     ) {
 
-//        Specification<Ship> specification = Specification.where(shipService.)
-        List<Ship> allShips = this.shipService.getAll();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(order.getFieldName()));
+
+        Specification<Ship> specification = Specification.where(shipSpecification.getByName(name)
+                .and(shipSpecification.getByPlanet(planet))
+                .and(shipSpecification.getByShipType(shipType))
+                .and(shipSpecification.getByProdDate(after, before))
+                .and(shipSpecification.getByUsed(isUsed))
+                .and(shipSpecification.getBySpeed(minSpeed, maxSpeed))
+                .and(shipSpecification.getByCrewSize(minCrewSize, maxCrewSize))
+                .and(shipSpecification.getByRating(minRating, maxRating)));
+
+        List<Ship> allShips = this.shipService.getAll(specification, pageable).getContent();
         if (allShips.size() == 0) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -62,9 +83,18 @@ public class ShipController {
                                                  @RequestParam(required = false) Integer maxCrewSize,
                                                  @RequestParam(required = false) Double minRating,
                                                  @RequestParam(required = false) Double maxRating) {
-        List<Ship> allShips = this.shipService.getAll();
 
-        return new ResponseEntity<>(allShips.size(), HttpStatus.OK);
+
+        Specification<Ship> specification = Specification.where(shipSpecification.getByName(name)
+                .and(shipSpecification.getByPlanet(planet))
+                .and(shipSpecification.getByShipType(shipType))
+                .and(shipSpecification.getByProdDate(after, before))
+                .and(shipSpecification.getByUsed(isUsed))
+                .and(shipSpecification.getBySpeed(minSpeed, maxSpeed))
+                .and(shipSpecification.getByCrewSize(minCrewSize, maxCrewSize))
+                .and(shipSpecification.getByRating(minRating, maxRating)));
+
+        return new ResponseEntity<>(this.shipService.getCount(specification), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/ships", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -180,8 +210,7 @@ public class ShipController {
     private Integer getProdYear(Date prodDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(prodDate);
-        int prodYear = calendar.get(Calendar.YEAR);
-        return prodYear;
+        return calendar.get(Calendar.YEAR);
 
     }
 
