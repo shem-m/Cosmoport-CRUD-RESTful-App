@@ -1,4 +1,4 @@
-# Cosmoport_Spring_CRUD_RESTful_App
+# JavaRush intership test task
 
 Technologies used:
 
