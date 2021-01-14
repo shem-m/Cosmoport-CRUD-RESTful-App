@@ -1,10 +1,15 @@
 # Cosmoport_Spring_CRUD_RESTful_App
 
 Technologies used:
+
 -Maven;
+
 -Tomcat 9;
+
 -Spring;
+
 -Spring Data JPA;
+
 -MySQL (база данных (БД)
 
 # Description
